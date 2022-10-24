@@ -113,7 +113,9 @@ params:
       datatype: string
       default: '"SHA256"'
       description: |
-        The digest algorithm to use for Authn requests.
+        The digest algorithm to use for Authn requests:
+        - `SHA256`
+        - `SHA1`
     - name: response_signature_method
       required: false
       datatype: string
@@ -128,25 +130,15 @@ params:
       datatype: string
       default: '"SHA256"'
       description: |
-        The algorithm to use for verify digest in SAML responses.
-    - name: request_binding
-      required: false
-      datatype: string
-      default: POST
-      description: |
-        Request binding to use with sending Authn requests. Most IdPs only support `POST`. Options are `POST` and `GET`.
+        The algorithm to use for verify digest in SAML responses:
+        - `SHA256`
+        - `SHA1`
     - name: issuer
       required: true
       datatype: string
       default: null
       description: |
         Unique identifier of the IdP application. Formatted as a URL containing information about the IdP so the SP can validate that the SAML assertions it receives are issued from the correct IdP.
-    - name: idp
-      required: true
-      datatype: string
-      default: '"adfs"'
-      description: |
-        The IdP name. Value is `adfs` but other IdPs will be added in the future.
     - name: nameid_format
       required: false
       datatype: string
