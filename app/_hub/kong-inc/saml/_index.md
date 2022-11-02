@@ -359,6 +359,26 @@ params:
 
 ## Kong Configuration
 
+### Create an Anonymous Consumer:
+
+```bash
+http -f put :8001/consumers/anonymous
+```
+```http
+HTTP/1.1 200 OK
+```
+```json
+{
+    "created_at": 1667352450,
+    "custom_id": null,
+    "id": "bec9d588-073d-4491-b210-1d07099bfcde",
+    "tags": null,
+    "type": 0,
+    "username": "anonymous",
+    "username_lower": null
+}
+```
+
 ### Create a Service
 
 ```bash
@@ -390,21 +410,28 @@ HTTP/1.1 200 OK
 {
     "id": "ac1e86bd-4bce-4544-9b30-746667aaa74a",
     "name": "saml-route",
-    "paths": [ "/" ]
+    "paths": [ "/saml" ]
 }
 ```
 
+### Setup Microsoft AzureAD 
+
+1. Create a SAML Enterprise Application. Refer to https://learn.microsoft.com/en-us/azure/active-directory/manage-apps/add-application-portal for further information.
+2. Note the `Identifier (Entity ID)` and and `Sign on URL` parameters
+3. For the `Reply URL (Assertion Consumer Service URL)`, use "https://<proxy_host>:<proxy_port>/saml/consume"
+4. Assign users 
+
 ### Create a Plugin
 
-Validation of the SAML response is disabled in the plugin configuration below. This configuration should not be used in a production
-environment.
+Validation of the SAML response Assertion is disabled in the plugin configuration below. This configuration should not be used in a production environment.
 
 ```bash
 http -f post :8001/services/saml-service/plugins                                                  \
   name=saml                                                                                       \
+  config.anonymous=<Kong Anonymous Consumer UUID>                                                 \
   service.name=saml-service                                                                       \
-  config.issuer=https://samltoolkit.azurewebsites.net/kong_saml                                   \
-  config.idp_sso_url=https://login.microsoftonline.com/f177c1d6-50cf-49e0-818a-a0585cbafd8d/saml  \
+  config.issuer=<AzureAD Identity (Entity ID)>                                                    \
+  config.idp_sso_url=<AzureAD Sign on URL>                                                        \
   config.assertion_consumer_path=/consume                                                         \
   config.disable_signature_validation=true
 ```
@@ -421,31 +448,17 @@ HTTP/1.1 200 OK
     "config": {
         "assertion_consumer_path": "/consume",
         "disable_signature_validation": true,
-        "idp_sso_url": "https://login.microsoftonline.com/f177c1d6-50cf-49e0-818a-a0585cbafd8d/saml",
+        "idp_sso_url": "https://login.microsoftonline.com/f177c1d6-50cf-49e0-818a-a0585cbafd8d/saml2",
         "issuer": "https://samltoolkit.azurewebsites.net/kong_saml",
+        ...
     }
 }
 ```
 
 ### Test the SAML plugin
 
-The request resource expects a Status Query Parameter which is missing from the request.
+1. Using a browser, go to the URL "http://<proxy-host>:8000/saml" 
+2. The browser is redirected to the AzureAD Sign in page. Enter the user credentials of a user configured in AzureAD
+3. If user credentials are valid, the brower will be redirected to the configured Kong Service, that is, https://httpbin.org/anything
 
-{% navtabs %}
-{% navtab cURL %}
-
-```bash
-curl -X GET "http://<proxy-host>:8000/" \
-  -H "accept: application/json"
-```
-
-{% endnavtab %}
-{% navtab HTTPie %}
-
-```bash
-http <proxy-host>:8000/ accept:application/json
-```
-
-{% endnavtab %}
-{% endnavtabs %}
 
