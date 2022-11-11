@@ -1,199 +1,29 @@
 ---
 title: Getting started with the Kubernetes Ingress Controller
+content_type: tutorial
 ---
 
-## Installation
-
-Please follow the [deployment](/kubernetes-ingress-controller/{{page.kong_version}}/deployment/overview) documentation to install
-the {{site.kic_product_name}} onto your Kubernetes cluster.
-
-If you wish to use the Gateway APIs examples, you must first [install the
-Gateway API resources](https://gateway-api.sigs.k8s.io/guides/#installing-gateway-api)
-and restart your Deployment after:
-
-{% navtabs codeblock %}
-{% navtab Command %}
-```bash
-kubectl rollout restart -n NAMESPACE deployment DEPLOYMENT_NAME
-```
-{% endnavtab %}
-{% navtab Response %}
-```text
-deployment.apps/DEPLOYMENT_NAME restarted
-```
-{% endnavtab %}
-{% endnavtabs %}
-
-## Testing connectivity to Kong
-
-This guide assumes that `PROXY_IP` environment variable is
-set to contain the IP address or URL pointing to Kong.
-If you've not done so, please follow one of the
-[deployment guides](/kubernetes-ingress-controller/{{page.kong_version}}/deployment/overview) to configure this environment variable.
-
-If everything is setup correctly, making a request to Kong should return back
-a HTTP `404 Not Found` status code.
-
-{% navtabs codeblock %}
-{% navtab Command %}
-```bash
-curl -i $PROXY_IP
-```
-{% endnavtab %}
-{% navtab Response %}
-```text
-HTTP/1.1 404 Not Found
-Content-Type: application/json; charset=utf-8
-Connection: keep-alive
-Content-Length: 48
-X-Kong-Response-Latency: 0
-Server: kong/3.0.0
-
-{"message":"no Route matched with those values"}
-```
-{% endnavtab %}
-{% endnavtabs %}
-
-This is expected since Kong doesn't know how to proxy the request yet.
-
-## Deploy an upstream application
-
-To proxy requests, you need an upstream application to proxy to. Deploying this
-echo server provides a simple application that returns information about the
-Pod it's running in:
-
-{% navtabs codeblock %}
-{% navtab Command %}
-```bash
-kubectl apply -f https://bit.ly/echo-service
-```
-{% endnavtab %}
-{% navtab Response %}
-```text
-service/echo created
-deployment.apps/echo created
-```
-{% endnavtab %}
-{% endnavtabs %}
-
-## Add whatever we call this
-
-Ingress and Gateway APIs controllers need configuration indicating which set of
-routing configuration they should recognize, to allow multiple controller to
-coexist in the same cluster. Before creating individual routes, you need to
-create class configuration to associate routes with:
-
-{% navtabs api %}
-{% navtab Ingress %}
-{% navtabs codeblock %}
-{% navtab Command %}
-```bash
-echo "
-apiVersion: networking.k8s.io/v1
-kind: IngressClass
-metadata:
-  name: kong
-spec:
-  controller: ingress-controllers.konghq.com/kong
-" | kubectl apply -f -
-```
-{% endnavtab %}
-{% navtab Response %}
-```text
-Warning: resource ingressclasses/kong is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
-ingressclass.networking.k8s.io/kong configured
-```
-Official distributions of {{site.kic_product_name}} come with a `kong`
-IngressClass by default, but without `apply` history, hence the warning above.
-{% endnavtab %}
-{% endnavtabs %}
-
-{{site.kic_product_name}} recognizes the `kong` IngressClass by default.
-Setting the `CONTROLLER_INGRESS_CLASS` environment variable to another value
-overrides this.
-
-{% endnavtab %}
-{% navtab Gateway APIs %}
-{% navtabs codeblock %}
-{% navtab Command %}
-{% if_version lte: 2.5.x %}
-```bash
-echo "
----
-apiVersion: gateway.networking.k8s.io/v1beta1
-kind: GatewayClass
-metadata:
-  name: kong
-spec:
-  controllerName: konghq.com/kic-gateway-controller
----
-apiVersion: gateway.networking.k8s.io/v1beta1
-kind: Gateway
-metadata:
-  name: kong
-  annotations:
-    konghq.com/gateway-unmanaged: kong/kong-proxy
-spec:
-  gatewayClassName: kong
-  listeners:
-  - name: proxy
-    port: 80
-    protocol: HTTP
-  - name: proxy-ssl
-    port: 443
-    protocol: HTTPS
-" | kubectl apply -f -
-```
+{% if_version lte: 2.6.x %}
+{:.important}
+> The Gateway APIs implementation is released as a [tech preview](https://docs.konghq.com/gateway/latest/stability/#tech-preview)
+> (alpha quality) and should not be deployed in a production environment.
 {% endif_version %}
 {% if_version gte: 2.6.x %}
-```bash
-echo "
----
-apiVersion: gateway.networking.k8s.io/v1beta1
-kind: GatewayClass
-metadata:
-  name: kong
-  annotations:
-    konghq.com/gatewayclass-unmanaged: 'true'
-spec:
-  controllerName: konghq.com/kic-gateway-controller
----
-apiVersion: gateway.networking.k8s.io/v1beta1
-kind: Gateway
-metadata:
-  name: kong
-spec:
-  gatewayClassName: kong
-  listeners:
-  - name: proxy
-    port: 80
-    protocol: HTTP
-  - name: proxy-ssl
-    port: 443
-    protocol: HTTPS
-" | kubectl apply -f -
-```
-{% endnavtab %}
-{% navtab Response %}
-```text
-gatewayclass.gateway.networking.k8s.io/kong created
-gateway.gateway.networking.k8s.io/kong created
-```
-{% endnavtab %}
-{% endnavtabs %}
+{:.important}
+> The Gateway APIs implementation is released as a [beta](https://docs.konghq.com/gateway/latest/stability/#beta)
+> and should not be deployed in a production environment.
+{% endif_version %}
 
-{{site.kic_product_name}} recognizes GatewayClasses with `controllerName:
-konghq.com/kic-gateway-controller` by default. Setting the
-`CONTROLLER_GATEWAY_API_CONTROLLER_NAME` environment variable to another value
-overrides this.
+## Overview
 
-{% endnavtab %}
-{% endnavtabs %}
+This guide walks through setting up an HTTP(S) route and plugin using
+{{site.base_gateway}} and {{site.kic_product_name}}.
 
-{{site.kic_product_name}} recognizes the `kong` IngressClass and
-`konghq.com/kic-gateway-controller` GatewayClass
-by default. Setting the `CONTROLLER_INGRESS_CLASS` environment variable to
-another value overrides this.
+{% include /md/kic/installation.md %}
+
+{% include /md/kic/http-test-service.md %}
+
+{% include /md/kic/class.md %}
 
 ## Add routing configuration
 
@@ -214,7 +44,8 @@ metadata:
 spec:
   ingressClassName: kong
   rules:
-  - http:
+  - host: 'kong.example'
+    http:
       paths:
       - path: /echo
         pathType: ImplementationSpecific
@@ -247,6 +78,8 @@ metadata:
 spec:
   parentRefs:
   - name: kong
+  hostnames:
+  - 'kong.example'
   rules:
   - matches:
     - path:
@@ -273,7 +106,7 @@ Test the Ingress rule:
 {% navtabs codeblock %}
 {% navtab Command %}
 ```bash
-curl -i $PROXY_IP/echo
+curl -i http://kong.example/echo --resolve kong.example:80:$PROXY_IP
 ```
 {% endnavtab %}
 {% navtab Response %}
@@ -305,6 +138,121 @@ Pod Information:
 If everything is deployed correctly, you should see the above response.
 This verifies that Kong can correctly route traffic to an application running
 inside Kubernetes.
+
+## Add TLS configuration
+
+Routing configuration can include a certificate to present when clients connect
+over HTTPS. This is not required, as {{site.base_gateway}} will serve a default
+certificate if it cannot find another, but including TLS configuration along
+with routing configuration is typical.
+
+First, create a test certificate for the `kong.example` hostname:
+
+{% navtabs codeblock %}
+{% navtab Command %}
+```bash
+openssl req -subj '/CN=kong.example' -new -newkey rsa:2048 -sha256 \
+  -days 365 -nodes -x509 -keyout server.key -out server.crt \
+  -addext "subjectAltName = DNS:kong.example" \
+  -addext "keyUsage = digitalSignature" \
+  -addext "extendedKeyUsage = serverAuth" 2> /dev/null;
+  openssl x509 -in server.crt -subject -noout
+```
+{% endnavtab %}
+{% navtab Response %}
+```text
+subject=CN = kong.example
+```
+{% endnavtab %}
+{% endnavtabs %}
+
+Second, create a Secret containing the certificate:
+
+{% navtabs codeblock %}
+{% navtab Command %}
+```bash
+kubectl create secret tls kong-example --cert=./server.crt --key=./server.key
+```
+{% endnavtab %}
+{% navtab Response %}
+```text
+secret/kong-example created
+```
+{% endnavtab %}
+{% endnavtabs %}
+
+Finally, update your routing configuration to use this certificate:
+
+{% navtabs api %}
+{% navtab Ingress %}
+{% navtabs codeblock %}
+{% navtab Command %}
+```bash
+kubectl patch --type json ingress echo -p='[{
+    "op":"add",
+	"path":"/spec/tls",
+	"value":[{
+        "hosts":["kong.example"],
+		"secretName":"kong-example"
+    }]
+}]'
+```
+{% endnavtab %}
+{% navtab Response %}
+```text
+ingress.networking.k8s.io/echo patched
+
+```
+{% endnavtab %}
+{% endnavtabs %}
+{% endnavtab %}
+{% navtab Gateway APIs %}
+{% if_version lt: 2.5.x %}
+{{site.kic_product_name}} versions below 2.5 do not support certificates with
+Gateway APIs.
+{% endif_version %}
+{% if_version gte: 2.5.x %}
+{% navtabs codeblock %}
+{% navtab Command %}
+```bash
+kubectl patch --type=json gateway kong -p='[{
+    "op":"add",
+	"path":"/spec/listeners/1/tls",
+	"value":{
+	    "certificateRefs":[{
+		    "group":"",
+			"kind":"Secret",
+			"name":"kong-example"
+		}]
+    }
+}]'
+```
+{% endnavtab %}
+{% navtab Response %}
+```text
+gateway.gateway.networking.k8s.io/kong patched
+```
+{% endnavtab %}
+{% endnavtabs %}
+{% endif_version %}
+{% endnavtab %}
+{% endnavtabs %}
+
+After, requests will serve the configured certificate:
+
+{% navtabs codeblock %}
+{% navtab Command %}
+```bash
+curl -ksv https://kong.example/echo --resolve kong.example:443:$PROXY_IP 2>&1 | grep -A1 "certificate:"
+```
+{% endnavtab %}
+{% navtab Response %}
+```text
+* Server certificate:
+*  subject: CN=kong.example
+```
+{% endnavtab %}
+{% endnavtabs %}
 
 ## Using plugins in Kong
 
@@ -371,7 +319,7 @@ this resource. To test, it send another request through the proxy:
 {% navtabs codeblock %}
 {% navtab Command %}
 ```bash
-curl -i $PROXY_IP/echo
+curl -i http://kong.example/echo --resolve kong.example:80:$PROXY_IP
 ```
 {% endnavtab %}
 {% navtab Response %}
@@ -459,7 +407,7 @@ Kong will now enforce a rate limit to requests proxied to this Service:
 {% navtabs codeblock %}
 {% navtab Command %}
 ```bash
-curl -i $PROXY_IP/echo
+curl -i http://kong.example/echo --resolve kong.example:80:$PROXY_IP
 ```
 {% endnavtab %}
 {% navtab Response %}

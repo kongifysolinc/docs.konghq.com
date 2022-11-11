@@ -93,3 +93,35 @@ reference backends in other namespaces in `BackendRefs`.
 ### Supported Versions
 - `v1alpha2`
 {% endif_version %}
+
+{% if_version lte: 2.5.x %}
+## Alpha limitations
+{% endif_version %}
+{% if_version gte: 2.6.x %}
+## Beta limitations
+{% endif_version %}
+
+{{site.kic_product_name}} Gateway API support is a work in progress, and not all features of
+Gateway APIs are supported. In particular:
+
+{% if_version lte: 2.3.x %}
+- `HTTPRoute` is the only supported route type. `TCPRoute`, `UDPRoute`, and `TLSRoute`
+  are not yet implemented.
+- `HTTPRoute` does not yet support multiple `backendRefs`. You cannot distribute
+  requests across multiple Services.
+{% endif_version %}
+- `queryParam` matches are not supported.
+{% if_version gte: 2.4.x %}
+{% if_version lte: 2.5.x %}
+- Gateway Listener configuration does not support `TLSConfig`. You can't
+  load certificates for HTTP Routes and TLS Routes via Gateway
+  configuration, and must either accept the default Kong certificate or add
+  certificates and SNI resources manually via the admin API in DB-backed mode.
+{% endif_version %}
+{% endif_version %}
+{% if_version gte: 2.5.x %}
+- Gateways [are not provisioned automatically](/kubernetes-ingress-controller/{{page.kong_version}}/concepts/gateway-api#gateway-management).
+- Kong [only supports a single Gateway per GatewayClass](/kubernetes-ingress-controller/{{page.kong_version}}/concepts/gateway-api#listener-compatibility-and-handling-multiple-gateways).
+{% endif_version %}
+- HTTPRoutes cannot be bound to a specific port using a [ParentReference](https://gateway-api.sigs.k8s.io/references/spec/#gateway.networking.k8s.io/v1beta1.ParentReference).
+  Kong serves all HTTP routes on all HTTP listeners.
