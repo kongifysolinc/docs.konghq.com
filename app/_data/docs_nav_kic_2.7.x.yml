@@ -127,6 +127,8 @@ items:
         url: /guides/preserve-client-ip
       - text: Using Kong with Knative
         url: /guides/using-kong-with-knative
+      - text: Using ultiple Backend Services
+        url: /guides/using-multiple-backends
   - title: References
     icon: /assets/images/icons/documentation/icn-kubernetes-color.svg
     items:
