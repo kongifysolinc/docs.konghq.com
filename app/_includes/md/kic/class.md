@@ -40,7 +40,6 @@ overrides this.
 {% navtab Gateway APIs %}
 {% navtabs codeblock %}
 {% navtab Command %}
-{% if_version lte: 2.5.x %}
 ```bash
 echo "
 ---
@@ -48,37 +47,10 @@ apiVersion: gateway.networking.k8s.io/v1beta1
 kind: GatewayClass
 metadata:
   name: kong
-spec:
-  controllerName: konghq.com/kic-gateway-controller
----
-apiVersion: gateway.networking.k8s.io/v1beta1
-kind: Gateway
-metadata:
-  name: kong
-  annotations:
-    konghq.com/gateway-unmanaged: kong/kong-proxy
-spec:
-  gatewayClassName: kong
-  listeners:
-  - name: proxy
-    port: 80
-    protocol: HTTP
-  - name: proxy-ssl
-    port: 443
-    protocol: HTTPS
-" | kubectl apply -f -
-```
-{% endif_version %}
 {% if_version gte: 2.6.x %}
-```bash
-echo "
----
-apiVersion: gateway.networking.k8s.io/v1beta1
-kind: GatewayClass
-metadata:
-  name: kong
   annotations:
     konghq.com/gatewayclass-unmanaged: 'true'
+{% endif_version %}
 spec:
   controllerName: konghq.com/kic-gateway-controller
 ---
@@ -86,6 +58,10 @@ apiVersion: gateway.networking.k8s.io/v1beta1
 kind: Gateway
 metadata:
   name: kong
+  annotations:
+{% if_version lte: 2.5.x %}
+    konghq.com/gateway-unmanaged: kong/kong-proxy
+{% endif_version %}
 spec:
   gatewayClassName: kong
   listeners:
