@@ -162,7 +162,8 @@ Because {{site.kic_product_name}} and {{site.base_gateway}} instances are
 installed independent of their Gateway resource, we set the
 `konghq.com/gateway-unmanaged` annotation to the `<namespace>/<name>` of the
 Kong proxy Service. This instructs KIC to populate that {{site.base_gateway}}
-resource with listener and status information. {% endif_version %}
+resource with listener and status information.
+{% endif_version %}
 
 {% if_version gte: 2.6.x %}
 To configure KIC to reconcile the Gateway resource, you must set the 
@@ -191,5 +192,3 @@ kubectl get gateway kong -o=jsonpath='{.status.addresses}' | jq
   }
 ]
 ```
-
-{% if_version gte: 2.6.x %}
