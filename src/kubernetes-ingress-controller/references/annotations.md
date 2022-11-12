@@ -23,7 +23,7 @@ Following annotations are supported on Ingress resources:
 | [`konghq.com/request-buffering`](#konghqcomrequest-buffering) | Set request buffering on routes created from this Ingress. |
 | [`konghq.com/response-buffering`](#konghqcomresponse-buffering) | Set response buffering on routes created from this Ingress. |
 | [`konghq.com/host-aliases`](#konghqcomhostaliases) | Additional hosts for routes created from this Ingress's rules. |
-| [`konghq.com/override`](#konghqcomoverride) | Control other routing attributes via `KongIngress` resource. |
+| [`konghq.com/override`](#konghqcomoverride) | Control other routing attributes via KongIngress resource. |
 
 `kubernetes.io/ingress.class` is normally required, and its value should match
 the value of the `--ingress-class` controller argument (`kong` by default).
@@ -177,7 +177,7 @@ the request and response or impose certain policies on the requests as they
 are proxied to your service.
 
 With the {{site.kic_product_name}}, plugins can be configured by creating
-`KongPlugin` Custom Resources and then associating them with an Ingress, Service,
+KongPlugin Custom Resources and then associating them with an Ingress, Service,
 KongConsumer or a combination of those.
 
 Following is an example of how to use the annotation:
@@ -510,7 +510,7 @@ konghq.com/host-header: "test.example.com"
 ### ingress.kubernetes.io/service-upstream
 
 By default, the {{site.kic_product_name}} distributes traffic amongst all the
-Pods of a Kubernetes `Service` by forwarding the requests directly to
+Pods of a Kubernetes Service by forwarding the requests directly to
 Pod IP addresses. One can choose the load-balancing strategy to use
 by specifying a KongIngress resource.
 
@@ -527,7 +527,7 @@ traffic accordingly. If a sidecar intercepts the traffic from the controller,
 it can also route traffic as it sees fit in this case.
 
 Following is an example snippet you can use to configure this annotation
-on a `Service` resource in Kubernetes, (please note the quotes around `true`):
+on a Service resource in Kubernetes, (please note the quotes around `true`):
 
 ```yaml
 annotations:

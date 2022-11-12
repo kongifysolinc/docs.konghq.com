@@ -32,9 +32,9 @@ The {{site.kic_product_name}} supports the following resources and features in t
 
 ## HTTP Routes
 
-{{site.kic_product_name}}'s implementation of `HTTPRoute` supports multiple `BackendRefs` with a
+{{site.kic_product_name}}'s implementation of HTTPRoute supports multiple `BackendRefs` with a
 round-robin load-balancing strategy applied by default across the
-`Endpoints` or the `Services`. `BackendRefs` weights are now supported
+Endpoints or the Services. `BackendRefs` weights are now supported
 to allow you to fine-tune the load-balancing between those backend services.
 
 ### Supported Versions
@@ -55,16 +55,16 @@ to allow you to fine-tune the load-balancing between those backend services.
 
 ## TCP Routes
 
-The {{site.kic_product_name}}'s implementation of `TCPRoute` supports multiple `BackendRefs` in
-`TCPRoute` resources for load balancing.
+The {{site.kic_product_name}}'s implementation of TCPRoute supports multiple `BackendRefs` in
+TCPRoute resources for load balancing.
 
 ### Supported Versions
 - `v1alpha2`
 
 ## UDP Routes
 
-The {{site.kic_product_name}}'s implementation of `UDPRoute` supports multiple `BackendRefs` in
-`UDPRoute` resources for load balancing.
+The {{site.kic_product_name}}'s implementation of UDPRoute supports multiple `BackendRefs` in
+UDPRoute resources for load balancing.
 
 ### Supported Versions
 - `v1alpha2`
@@ -77,7 +77,7 @@ The {{site.kic_product_name}}'s implementation of `UDPRoute` supports multiple `
 {% if_version gte:2.6.x %}
 ## Reference Grants
 
-Kong implementation supports `ReferenceGrant` to allow routes to
+Kong implementation supports ReferenceGrant to allow routes to
 reference backends in other namespaces in `BackendRefs`.
 
 ### Supported Versions
@@ -105,9 +105,9 @@ reference backends in other namespaces in `BackendRefs`.
 Gateway APIs are supported. In particular:
 
 {% if_version lte: 2.3.x %}
-- `HTTPRoute` is the only supported route type. `TCPRoute`, `UDPRoute`, and `TLSRoute`
+- HTTPRoute is the only supported route type. TCPRoute, UDPRoute, and TLSRoute
   are not yet implemented.
-- `HTTPRoute` does not yet support multiple `backendRefs`. You cannot distribute
+- HTTPRoute does not yet support multiple `backendRefs`. You cannot distribute
   requests across multiple Services.
 {% endif_version %}
 - `queryParam` matches are not supported.
